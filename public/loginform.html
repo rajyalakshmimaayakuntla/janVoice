@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="msg"></h1>
+    <form>
+        <input placeholder="Enter your Username" type="text" name="username" id="un"> <br> <br>
+        <input placeholder="Enter Your password" type="password" name="password" id="ps"> <br> <br>
+        <button onclick="login(event)">Login</button>
+        <a href="registrationform.html">SignUp/Register</a> 
+    </form>
+    <script>
+       function login(ev){
+        ev.preventDefault()
+        const login_details={
+            username:document.getElementById("un").value,
+            password:document.getElementById("ps").value,
+            role:localStorage.getItem("role")
+        }
+        
+        fetch("/login",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(login_details)
+        }).then((res)=>res.json())
+        .then((data)=>{
+            if(data.success && data.user.role==="user"){
+                document.getElementById("msg").innerText=""
+                window.localStorage.setItem("user",JSON.stringify(data.user))
+                window.location.href="./reports.html"
+                document.getElementById("form").reset()
+            }
+            else if(data.success && data.user.role==="admin"){
+                document.getElementById("msg").innerText=""
+                window.localStorage.setItem("user",JSON.stringify(data.user))
+                window.location.href="./adminPage.html"
+            }
+            else{
+                document.getElementById("msg").innerText="❌ InCorrect User"
+            }
+        })
+       }
+       
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="msg"></h1>
+    
+    <form enctype="multipart/form-data">
+        <input type="text" placeholder="Enter issue name" id="issue_name"> </br> </br>
+        <textarea placeholder="Issue Description" id="issue_description"></textarea> </br> </br>
+        <textarea placeholder="Enter issue Address" id="issue_address"></textarea> </br> </br>
+        <input type="file" id="issue_image"> </br> </br>
+        <button onclick="submitIssue(event)">Submit Issue</button>
+    </form>
+    <button onclick="myissues(event)">Issues Raised By me</button>
+    <ul id="issues"></ul>
+    <script>
+        const user=JSON.parse(localStorage.getItem("user"))
+        document.getElementById("msg").innerText="Hi , "+user.username
+        function submitIssue(ev){
+            ev.preventDefault()
+            const formData=new FormData()
+            formData.append("issue_name",document.getElementById("issue_name").value)
+            formData.append("issue_description",document.getElementById("issue_description").value)
+            formData.append("issue_address",document.getElementById("issue_address").value)
+            formData.append("issue_image",document.getElementById("issue_image").files[0])
+            formData.append("userId",user._id)
+            fetch("http://localhost:3000/addIssue",{
+                method:"POST",
+                body:formData
+            }).then((res)=>res.json())
+            .then((data)=>{
+                if(data.msg){
+                    alert("Issue Added")
+                    document.querySelector("form").reset()
+                }
+            })
+        }
+        function myissues(ev){
+            ev.preventDefault()
+            window.location.href="./userIssues.html"
+        }
+    </script>
+</body>
+</html>

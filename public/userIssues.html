@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    #outer_cont{
+        display: flex;
+        flex-wrap: wrap;
+    }
+</style>
+<body>
+    <div id="outer_cont">
+    </div>
+</body>
+<script>
+    const user=JSON.parse(localStorage.getItem("user"))
+    fetch(`http://localhost:3000/getmyIssues/${user._id}`)
+            .then((res)=>res.json())
+            .then((data)=>{
+                // console.log(data);
+                document.getElementById("outer_cont").innerHTML=""
+                data.forEach((issue)=>{
+                    const card=document.createElement("div")
+                    card.style.border = "1px solid black"
+                    card.style.margin = "10px"
+                    card.style.padding = "10px"
+                    card.style.width = "250px"
+
+                    const issue_name=document.createElement("h2")
+                    issue_name.innerText="Issue Name = "+issue.issue_name
+
+                    const issue_image=document.createElement("img")
+                    issue_image.src="/"+issue.issue_image
+
+                    const issue_status=document.createElement("h3")
+                    issue_status.innerText="Issue Status = "+ issue.issue_status
+
+                    card.appendChild(issue_name)
+                    card.appendChild(issue_image)
+                    card.appendChild(issue_status)
+
+                    document.getElementById("outer_cont").appendChild(card)
+                })
+            })
+</script>
+</html>

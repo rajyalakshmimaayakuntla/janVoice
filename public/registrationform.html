@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form>
+        <input placeholder="Create a userName" type="text" name="username" id="un"> </br> </br>
+        <input placeholder="Set your password" type="password" name="password" id="ps"> </br> </br>
+        <input placeholder="Enter your email" type="email" name="email" id="em"> </br> </br>
+        <input placeholder="Enter Your Phone Number" type="text" name="phoneno" id="pn"> </br> </br>
+        <button onclick="adduser(event)">Create my account</button>
+        <input type="hidden" name="role" id="role">
+    </form>
+    <script>
+        document.getElementById("role").value=localStorage.getItem("role")
+        // console.log(localStorage.getItem("role"));
+        function adduser(ev){
+            ev.preventDefault()
+            const data={
+                username:document.getElementById("un").value,
+                password:document.getElementById("ps").value,
+                email:document.getElementById("em").value,
+                phoneno:document.getElementById("pn").value,
+                role:document.getElementById("role").value
+            }
+            fetch("http://localhost:3000/register",{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify(data)
+            }).then((res)=>res.json())
+            .then((data)=>{
+                if(data.role==="user"){
+                    window.location.href="/reports.html"
+                }
+                else{
+                    window.location.href="/adminPage.html"
+                }
+            })
+        }
+    </script>
+</body>
+</html>

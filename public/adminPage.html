@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    #cont{
+        display: flex;
+        flex-wrap:wrap ;
+    }
+</style>
+<body>
+    <h1 id="msg"></h1>
+    <div id="cont"></div>
+    <script>
+        const user=JSON.parse(localStorage.getItem("user"))
+        document.getElementById("msg").innerText="Hi , "+user.username
+        fetch("http://localhost:3000/getAllIssues")
+        .then((res)=>res.json())
+        .then((data)=>{
+            document.getElementById("cont").innerHTML=""
+            data.forEach((issue)=>{
+                const card=document.createElement("div")
+                card.style.border = "1px solid black"
+                card.style.margin = "10px"
+                card.style.padding = "10px"
+                card.style.width = "250px"
+                
+                const issue_name=document.createElement("h2")
+                issue_name.innerText="Issue Name = "+issue.issue_name
+
+                const issue_image=document.createElement("img")
+                issue_image.src="/"+issue.issue_image
+
+                const issue_status=document.createElement("h3")
+                issue_status.innerText="Issue Status = "+ issue.issue_status
+
+                card.appendChild(issue_name)
+                card.appendChild(issue_image)
+                card.appendChild(issue_status)
+
+                document.getElementById("cont").appendChild(card)
+
+            })
+        })
+    </script>
+</body>
+</html>
