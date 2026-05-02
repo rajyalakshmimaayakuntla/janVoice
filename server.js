@@ -4,9 +4,11 @@ const cors = require("cors")
 const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
 const multer = require("multer")
-const session = require("express-session")
-const passport = require("passport")
-const GitHubStrategy = require("passport-github2").Strategy
+ 
+app.listen(3000, () => {
+    console.log("Hey Raj! Your backend server is running on port:3000")
+})
+
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -23,13 +25,7 @@ app.use(cors())
 app.use(express.static(__dirname + "/public"))
 app.use(express.static(__dirname + "/uploads"))
 app.use(bodyParser.json())
-app.use(session({
-    secret: process.env.SESSION_SECRET || "keyboard cat",
-    resave: false,
-    saveUninitialized: false
-}))
-app.use(passport.initialize())
-app.use(passport.session())
+
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
     console.log("Connected to DB")
@@ -66,71 +62,10 @@ const reportschema = mongoose.Schema({
 const userModel = mongoose.model("janVoice_users", userSchema)
 const reportModel = mongoose.model("janVoice_reports", reportschema)
 
-passport.serializeUser((user, done) => {
-    done(null, user._id)
-})
 
-passport.deserializeUser((id, done) => {
-    userModel.findById(id)
-        .then(user => done(null, user))
-        .catch(err => done(err))
-})
 
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID || "",
-    clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
-    callbackURL: process.env.GITHUB_CALLBACK_URL || "http://localhost:3000/auth/github/callback",
-    scope: ["user:email"]
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        const githubEmail = profile.emails && profile.emails[0] ? profile.emails[0].value : `${profile.username}@github.com`
-        let user = await userModel.findOne({ email: githubEmail })
-        if (!user) {
-            user = await userModel.create({
-                username: profile.username,
-                password: "",
-                email: githubEmail,
-                role: "user"
-            })
-        }
-        return done(null, user)
-    } catch (error) {
-        return done(error)
-    }
-}))
 
-app.get("/auth/github", passport.authenticate("github"))
 
-app.get("/auth/github/callback",
-    passport.authenticate("github", { failureRedirect: "/loginform.html" }),
-    (req, res) => {
-        res.redirect("/auth/github/success")
-    }
-)
-
-app.get("/auth/github/success", (req, res) => {
-    if (!req.user) {
-        return res.redirect("/loginform.html")
-    }
-
-    const user = {
-        _id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        role: req.user.role
-    }
-
-    res.send(`<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>GitHub Login Success</title></head>
-<body>
-<script>
-    localStorage.setItem('user', JSON.stringify(${JSON.stringify(user)}))
-    window.location.href = ${JSON.stringify(req.user.role === 'admin' ? '/adminPage.html' : '/reports.html')}
-</script>
-</body>
-</html>`)
-})
 
 app.post("/register", (req, res) => {
     const new_user = new userModel({
@@ -144,7 +79,7 @@ app.post("/register", (req, res) => {
     new_user.save().then(() => {
         console.log("data added")
         console.log(process.env.MONGODB_URI)
-        res.json({ role: new_user.role })
+        res.json({success:true })
     })
 })
 
@@ -188,6 +123,71 @@ app.get("/getmyIssues/:id", (req, res) => {
         })
 })
 
-app.listen(3000, () => {
-    console.log("Hey Raj! Your backend server is running on port:3000")
+app.post("/exploreIssue",(req,res)=>{
+   userModel.find({_id:req.body.userId})
+   .then((data)=>{
+    res.json(data)
+   })
+})
+
+app.post("/updateIssue",(req,res)=>{
+    reportModel.findById(req.body.issueId)
+    .then((data)=>{
+
+    if(data.issue_status=="Pending"){
+            reportModel.updateOne({_id:req.body.issueId},{$set:{issue_status:"Assigned"}})
+            .then(()=>{
+                res.json({msg:"issue Assigned"})
+            })
+    }
+
+    else if(data.issue_status=="Assigned"){
+        reportModel.updateOne({_id:req.body.issueId},{$set:{issue_status:"Resolved"}})
+        .then(()=>{
+            res.json({msg:"issue Resolved"})
+        })
+    }
+
+    else{
+        res.json({msg:"issue already resolved"})
+    }
+
+})
+})
+
+app.post("/deleteIssue",(req,res)=>{
+    reportModel.findByIdAndDelete(req.body.issueId)
+    .then((data)=>{
+        res.json({msg:"issue deleted",data})
+    })
+})
+
+app.post("/getIssuesByStatus",(req,res)=>{
+    if(req.body.issue_status==="all"){
+        reportModel.find()
+        .then((data)=>{
+            res.json(data)
+        })
+    }
+    else{
+        reportModel.find({issue_status:req.body.issue_status})
+        .then((data)=>{
+            res.json(data)
+        })
+    }
+})
+
+app.post("/getmyIssuesByStatus",(req,res)=>{
+    if(req.body.issue_status==="all"){
+        reportModel.find({userId:req.body.userId})
+        .then((data)=>{
+            res.json(data)
+        })
+    }
+    else{
+        reportModel.find({issue_status:req.body.issue_status, userId:req.body.userId})
+        .then((data)=>{
+            res.json(data)
+        })
+    }
 })

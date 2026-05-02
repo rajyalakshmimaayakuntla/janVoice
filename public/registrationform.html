@@ -32,14 +32,15 @@
                 body:JSON.stringify(data)
             }).then((res)=>res.json())
             .then((data)=>{
-                if(data.role==="user"){
-                    window.location.href="/reports.html"
+                if(data.success){
+                    alert("User Registered Successfully")
+                    window.location.href="./loginform.html"
                 }
                 else{
-                    window.location.href="/adminPage.html"
+                    alert("User Registration Failed")
                 }
-            })
-        }
+        })
+    }
     </script>
 </body>
 </html>

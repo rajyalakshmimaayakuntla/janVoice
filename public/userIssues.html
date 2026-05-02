@@ -12,16 +12,26 @@
     }
 </style>
 <body>
-    <div id="outer_cont">
-    </div>
+    <h1 id="msg"></h1>
+    <input type="radio" name="filter" value="all" checked>All Issues
+    <input type="radio" name="filter" value="Pending">Pending Issues
+    <input type="radio" name="filter" value="Assigned">Assigned Issues
+    <input type="radio" name="filter" value="Resolved">Resolved Issues
+    <div id="outer_cont"></div>
+    <div id="cont2"></div>
 </body>
 <script>
     const user=JSON.parse(localStorage.getItem("user"))
+    document.getElementById("msg").innerText="Hi , "+user.username
     fetch(`http://localhost:3000/getmyIssues/${user._id}`)
             .then((res)=>res.json())
             .then((data)=>{
                 // console.log(data);
+                genUI(data)
+            })
+            function genUI(data){
                 document.getElementById("outer_cont").innerHTML=""
+                document.getElementById("cont2").innerHTML=""
                 data.forEach((issue)=>{
                     const card=document.createElement("div")
                     card.style.border = "1px solid black"
@@ -29,21 +39,109 @@
                     card.style.padding = "10px"
                     card.style.width = "250px"
 
-                    const issue_name=document.createElement("h2")
-                    issue_name.innerText="Issue Name = "+issue.issue_name
+                    const issue_name=document.createElement("p")
+                    issue_name.innerHTML="<b><u>Issue Name</u> : </b>"+issue.issue_name
 
                     const issue_image=document.createElement("img")
                     issue_image.src="/"+issue.issue_image
+                    issue_image.style.width="230px"
 
-                    const issue_status=document.createElement("h3")
-                    issue_status.innerText="Issue Status = "+ issue.issue_status
+                    const issue_status=document.createElement("p")
+                    issue_status.innerHTML="<b><u>Issue Status</u> : </b>"+ issue.issue_status
+                    
+                    const btn=document.createElement("button")
+                    btn.innerHTML="Explore Issue"
+                    btn.onclick=(ev)=>{
+                    ev.preventDefault()
+
+                    document.getElementById("cont2").innerHTML=""
+                    const expandcard=document.createElement("div")
+
+                    expandcard.style.border = "1px solid black"
+                    expandcard.style.margin = "15px"
+                    expandcard.style.padding = "15px"
+                    expandcard.style.width = "600px"
+                    expandcard.style.textAlign="center" 
+
+                      const issue_name=document.createElement("p")
+                      issue_name.innerHTML=" <b> <u>Issue Name</u> : </b>"+issue.issue_name
+
+                      const issue_image=document.createElement("img")
+                      issue_image.src="/"+issue.issue_image
+
+
+                      const issue_status=document.createElement("p")
+                      issue_status.innerHTML="<b><u>Issue Status</u> : </b>"+ issue.issue_status
+
+                      const issue_address=document.createElement("p")
+                      issue_address.innerHTML="<b><u>Issue Address</u> : </b>"+issue.issue_address
+
+                      const head=document.createElement("h4")
+                      head.innerHTML="<u>Issue Raised by</u>"
+
+                      const username=document.createElement("p")
+                      username.innerHTML="<b><u>User Name</u> : </b>"+user.username
+
+                      const user_email=document.createElement("p")
+                      user_email.innerHTML="<b><u>user Email</u> : </b>"+user.email
+
+                      const user_phoneno=document.createElement("p")
+                      user_phoneno.innerHTML="<b><u>User Phoneno.</u> : </b>"+user.phoneno
+
+                      const del=document.createElement("button")
+                      del.innerText="Delete"
+                      del.onclick=()=>{
+                        fetch("/deleteIssue",{
+                            method:"POST",
+                            headers:{"Content-Type":"application/json"},
+                            body:JSON.stringify({issueId:issue._id})
+                        }).then((res)=>res.json())
+                        .then((data)=>{
+                            alert(data.msg)
+
+                            fetch("http://localhost:3000/getmyIssues")
+                            .then((res)=>res.json())
+                            .then((data)=>{
+                            genUI(data)
+                             })
+                        })
+                      }
+
+                      expandcard.appendChild(issue_name)
+                      expandcard.appendChild(issue_image)
+                      expandcard.appendChild(issue_status)
+                      expandcard.appendChild(issue_address)
+                      expandcard.appendChild(head)
+                      expandcard.appendChild(username)
+                      expandcard.appendChild(user_email)
+                      expandcard.appendChild(user_phoneno)
+                      expandcard.appendChild(del)
+                      document.getElementById("cont2").appendChild(expandcard)
+                }
 
                     card.appendChild(issue_name)
                     card.appendChild(issue_image)
                     card.appendChild(issue_status)
+                    card.appendChild(btn)
 
                     document.getElementById("outer_cont").appendChild(card)
                 })
-            })
+            }
+                document.querySelectorAll('input[name="filter"]').forEach(radio=>
+                {
+                  radio.onchange = ()=>
+                  {
+                     const selected = document.querySelector('input[name="filter"]:checked').value
+                      // console.log(selected)
+                      fetch("/getmyIssuesByStatus",{
+                       method:"POST",
+                       headers:{"Content-Type":"application/json"},
+                       body:JSON.stringify({issue_status:selected,userId:user._id})
+                       })
+                       .then((res)=>res.json())
+                       .then((data)=>{
+                       genUI(data)})
+    }
+})
 </script>
 </html>
