@@ -1,3 +1,4 @@
+//** This is the backend server file where we have defined all the APIs for the frontend to interact with the database. We have used Express.js for the server, Mongoose for the database and Multer for file uploads. We have also used CORS and Body-Parser middleware for handling cross-origin requests and parsing the request body respectively. We have defined the user schema and report schema for the database and also defined the APIs for user registration, login, adding issues, getting issues, updating issues and deleting issues. We have also defined APIs for filtering issues based on their status. */
 const express = require("express")
 const app = express()
 const cors = require("cors")
