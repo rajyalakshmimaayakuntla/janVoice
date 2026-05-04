@@ -1,52 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg,#6366f1, #3b82f6);
+}
+
+/* Card */
+.container {
+    background: white;
+    padding: 35px;
+    border-radius: 15px;
+    width: 330px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+/* Title */
+.container h2 {
+    margin-bottom: 10px;
+    color: #1e293b;
+}
+
+/* Role */
+.role {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 15px;
+}
+
+/* Inputs */
+.input-group {
+    position: relative;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+input:focus {
+    border-color: #6366f1;
+}
+
+/* Eye icon */
+.eye {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #6366f1;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #4f46e5;
+}
+
+/* Disabled button */
+button:disabled {
+    background: gray;
+    cursor: not-allowed;
+}
+
+/* Link */
+a {
+    display: block;
+    margin-top: 15px;
+    color: #6366f1;
+    text-decoration: none;
+}
+
+/* Message */
+#msg {
+    margin-top: 10px;
+    font-size: 14px;
+}
+</style>
 </head>
+
 <body>
-    <h1 id="msg"></h1>
+
+<div class="container">
+    <h2>Welcome Back 👋</h2>
+
+    <div class="role">
+        Role: <b id="roleText"></b>
+    </div>
+
     <form id="form">
-        <input placeholder="Enter your Username" type="text" name="username" id="un"> <br> <br>
-        <input placeholder="Enter Your password" type="password" name="password" id="ps"> <br> <br>
-        <button onclick="login(event)">Login</button>
-        <a href="registrationform.html">SignUp/Register</a>
+        <input placeholder="Username" id="un">
+
+        <div class="input-group">
+            <input type="password" placeholder="Password" id="ps">
+            <span class="eye" onclick="togglePassword()">👁️</span>
+        </div>
+
+        <button id="loginBtn" onclick="login(event)">Login</button>
     </form>
-    <br>
-     //** for users ans Admin login
-    <script>
-       function login(ev){
-        ev.preventDefault()
-        const login_details={
-            username:document.getElementById("un").value,
-            password:document.getElementById("ps").value,
-            role:localStorage.getItem("role")
+
+    <a href="registrationform.html">Create Account</a>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+const role = localStorage.getItem("role") || "user"
+roleText.innerText = role.toUpperCase()
+
+function togglePassword(){
+    const ps = document.getElementById("ps")
+    ps.type = ps.type === "password" ? "text" : "password"
+}
+
+function login(ev){
+    ev.preventDefault()
+
+    const btn = document.getElementById("loginBtn")
+    btn.innerText = "Logging in..."
+    btn.disabled = true
+
+    const login_details = {
+        username: un.value,
+        password: ps.value,
+        role: role
+    }
+
+    fetch("/login",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(login_details)
+    })
+    .then(res=>res.json())
+    .then((data)=>{
+        if(data.success && data.user.role==="user"){
+            localStorage.setItem("user", JSON.stringify(data.user))
+            window.location.href = "./reports.html"
         }
-        
-        fetch("/login",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify(login_details)
-        }).then((res)=>res.json())
-        .then((data)=>{
-            if(data.success && data.user.role==="user"){
-                document.getElementById("msg").innerText=""
-                window.localStorage.setItem("user",JSON.stringify(data.user))
-                window.location.href="./reports.html"
-                document.getElementById("form").reset()
-            }
-            else if(data.success && data.user.role==="admin"){
-                document.getElementById("msg").innerText=""
-                window.localStorage.setItem("user",JSON.stringify(data.user))
-                window.location.href="./adminPage.html"
-            }
-            else{
-                document.getElementById("msg").innerText="❌ InCorrect User"
-            }
-        })
-       }
-       
-    </script>
+        else if(data.success && data.user.role==="admin"){
+            localStorage.setItem("user", JSON.stringify(data.user))
+            window.location.href = "./adminPage.html"
+        }
+        else{
+            msg.innerText = "❌ Invalid username or password"
+            msg.style.color = "red"
+            btn.innerText = "Login"
+            btn.disabled = false
+        }
+    })
+    .catch(()=>{
+        msg.innerText = "⚠️ Server error"
+        msg.style.color = "orange"
+        btn.innerText = "Login"
+        btn.disabled = false
+    })
+}
+</script>
+
 </body>
 </html>

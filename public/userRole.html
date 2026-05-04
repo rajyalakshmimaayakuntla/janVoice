@@ -1,20 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JanVoice</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+
+/* 🌈 Animated Gradient */
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(-45deg,#6366f1,#3b82f6,#4f46e5,#6366f1);
+    background-size:300% 300%;
+    animation:gradient 8s ease infinite;
+    overflow:hidden;
+}
+
+@keyframes gradient{
+    0%{background-position:0%}
+    50%{background-position:100%}
+    100%{background-position:0%}
+}
+
+/* 🌊 Glow blobs */
+.blob{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:0.5;
+}
+
+.b1{background:#a78bfa;width:300px;height:300px;top:10%;left:10%;}
+.b2{background:#60a5fa;width:350px;height:350px;bottom:10%;right:10%;}
+
+/* 🌌 Canvas */
+canvas{
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+/* 🧊 Container */
+.container{
+    display:flex;
+    gap:40px;
+    align-items:center;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(20px);
+    padding:40px;
+    border-radius:20px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+    max-width:900px;
+    width:90%;
+}
+
+/* LEFT */
+.left{
+    flex:1;
+    color:white;
+}
+
+.left h1{
+    font-size:42px;
+}
+
+.left span{
+    background:linear-gradient(90deg,#facc15,#f472b6);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+/* typing */
+.typing{
+    margin:15px 0;
+    font-size:16px;
+    border-right:2px solid white;
+    width:0;
+    overflow:hidden;
+    white-space:nowrap;
+    animation:typing 4s steps(30,end) infinite alternate;
+}
+
+@keyframes typing{
+    from{width:0}
+    to{width:250px}
+}
+
+.features{
+    font-size:14px;
+    margin-bottom:20px;
+}
+
+/* CTA */
+.cta{
+    padding:12px 25px;
+    border:none;
+    border-radius:30px;
+    background:white;
+    color:#6366f1;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.3s;
+}
+
+.cta:hover{
+    transform:scale(1.1);
+}
+
+/* RIGHT */
+.right{
+    flex:1;
+    display:flex;
+    gap:20px;
+}
+
+/* Cards */
+.card{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    width:160px;
+    text-align:center;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:0.3s;
+}
+
+/* Gradient border */
+.card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    padding:2px;
+    background:linear-gradient(45deg,#6366f1,#f472b6,#facc15);
+    border-radius:15px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+}
+
+/* Hover */
+.card:hover{
+    transform:translateY(-12px) scale(1.05);
+    box-shadow:0 0 30px rgba(255,255,255,0.5);
+}
+
+/* Icons */
+.icon{
+    font-size:40px;
+    margin-bottom:10px;
+}
+
+/* Colors */
+.admin{border-top:5px solid #ef4444;}
+.user{border-top:5px solid #22c55e;}
+
+/* Responsive */
+@media(max-width:768px){
+    .container{flex-direction:column;text-align:center;}
+    .right{justify-content:center;}
+}
+</style>
 </head>
-//** This is the page where user can select their role before login or registration. Based on the selection the user will be redirected to the login page and then to the respective pages based on their role.
+
 <body>
-    <button onclick="userRole('admin')">Admin</button> </hr>
-    <button onclick="userRole('user')">User</button>
-</body>
+
+<!-- blobs -->
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+
+<!-- background canvas -->
+<canvas id="bg"></canvas>
+
+<div class="container">
+
+<!-- LEFT -->
+<div class="left">
+    <h1>JanVoice <span>🗣️</span></h1>
+
+    <div class="typing">Your Voice → Real Impact 🚀</div>
+
+    <div class="features">
+        ✔ Raise issues instantly <br>
+        ✔ Track in real-time <br>
+        ✔ Faster resolution
+    </div>
+
+    <button class="cta" onclick="scrollRoles()">Start Now →</button>
+</div>
+
+<!-- RIGHT -->
+<div class="right" id="roles">
+
+    <div class="card admin" onclick="userRole('admin')">
+        <div class="icon">👨‍💼</div>
+        <h3>Admin</h3>
+        <p>Manage issues</p>
+    </div>
+
+    <div class="card user" onclick="userRole('user')">
+        <div class="icon">👤</div>
+        <h3>User</h3>
+        <p>Raise issues</p>
+    </div>
+
+</div>
+
+</div>
+
 <script>
-    function userRole(role){
-        console.log(role);
-        localStorage.setItem("role",role)
-        window.location.href="loginform.html"
-    }
+function userRole(role){
+    localStorage.setItem("role",role)
+    window.location.href="loginform.html"
+}
+
+function scrollRoles(){
+    document.getElementById("roles").scrollIntoView({behavior:"smooth"})
+}
+
+/* 🎯 JanVoice Floating Icons */
+const canvas=document.getElementById("bg")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+const icons=["🗣️","📍","⚠️","✔️","📢"]
+
+let items=[]
+
+for(let i=0;i<40;i++){
+    items.push({
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height,
+        size:Math.random()*20+12,
+        speed:Math.random()*0.5+0.2,
+        icon:icons[Math.floor(Math.random()*icons.length)],
+        opacity:Math.random()*0.5+0.3
+    })
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height)
+
+    items.forEach(item=>{
+        ctx.globalAlpha=item.opacity
+        ctx.font=item.size+"px Arial"
+        ctx.fillText(item.icon,item.x,item.y)
+
+        item.y -= item.speed
+
+        if(item.y < -20){
+            item.y = canvas.height + 20
+            item.x = Math.random()*canvas.width
+        }
+    })
+
+    ctx.globalAlpha=1
+    requestAnimationFrame(draw)
+}
+
+draw()
+
+window.addEventListener("resize",()=>{
+    canvas.width=window.innerWidth
+    canvas.height=window.innerHeight
+})
 </script>
+
+</body>
 </html>

@@ -1,47 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg,#6366f1, #3b82f6);
+}
+
+/* Card */
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 340px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+/* Title */
+h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Role */
+.role {
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 15px;
+}
+
+/* Inputs */
+.input-group {
+    position: relative;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+input:focus {
+    border-color: #6366f1;
+}
+
+/* Eye icon */
+.eye {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #6366f1;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #4f46e5;
+}
+
+button:disabled {
+    background: gray;
+}
+
+/* Link */
+a {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #6366f1;
+    text-decoration: none;
+}
+
+/* Message */
+#msg {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+}
+</style>
 </head>
-//** This is the registration form for both Admin and User. The role is being set in the local storage based on the selection of the user in the userRole.html page. Based on that role the user will be registered as admin or user.
+
 <body>
-    <form>
-        <input placeholder="Create a userName" type="text" name="username" id="un"> </br> </br>
-        <input placeholder="Set your password" type="password" name="password" id="ps"> </br> </br>
-        <input placeholder="Enter your email" type="email" name="email" id="em"> </br> </br>
-        <input placeholder="Enter Your Phone Number" type="text" name="phoneno" id="pn"> </br> </br>
-        <button onclick="adduser(event)">Create my account</button>
-        <input type="hidden" name="role" id="role">
+
+<div class="container">
+    <h2>Create Account</h2>
+
+    <div class="role">
+        Role: <b id="roleText"></b>
+    </div>
+
+    <form id="form">
+        <input placeholder="Username" id="un">
+
+        <div class="input-group">
+            <input type="password" placeholder="Password" id="ps">
+            <span class="eye" onclick="togglePassword()">👁️</span>
+        </div>
+
+        <input type="email" placeholder="Email" id="em">
+        <input placeholder="Phone Number" id="pn">
+
+        <button id="regBtn" onclick="adduser(event)">Register</button>
     </form>
-    <script>
-        document.getElementById("role").value=localStorage.getItem("role")
-        // console.log(localStorage.getItem("role"));
-        function adduser(ev){
-            ev.preventDefault()
-            const data={
-                username:document.getElementById("un").value,
-                password:document.getElementById("ps").value,
-                email:document.getElementById("em").value,
-                phoneno:document.getElementById("pn").value,
-                role:document.getElementById("role").value
-            }
-            fetch("http://localhost:3000/register",{
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify(data)
-            }).then((res)=>res.json())
-            .then((data)=>{
-                if(data.success){
-                    alert("User Registered Successfully")
-                    window.location.href="./loginform.html"
-                }
-                else{
-                    alert("User Registration Failed")
-                }
-        })
+
+    <a href="loginform.html">Already have an account?</a>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+const role = localStorage.getItem("role") || "user"
+document.getElementById("roleText").innerText = role.toUpperCase()
+
+function togglePassword(){
+    const ps = document.getElementById("ps")
+    ps.type = ps.type === "password" ? "text" : "password"
+}
+
+function adduser(ev){
+    ev.preventDefault()
+
+    const btn = document.getElementById("regBtn")
+    btn.innerText = "Registering..."
+    btn.disabled = true
+
+    const data = {
+        username: un.value,
+        password: ps.value,
+        email: em.value,
+        phoneno: pn.value,
+        role: role
     }
-    </script>
+
+    // Basic validation
+    if(!data.username || !data.password || !data.email || !data.phoneno){
+        msg.innerText = "⚠️ Please fill all fields"
+        msg.style.color = "orange"
+        btn.innerText = "Register"
+        btn.disabled = false
+        return
+    }
+
+    fetch("http://localhost:3000/register",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(data)
+    })
+    .then(res=>res.json())
+    .then((res)=>{
+        if(res.success){
+            msg.innerText = "✅ Registered successfully"
+            msg.style.color = "green"
+
+            setTimeout(()=>{
+                window.location.href="loginform.html"
+            },1000)
+        } else {
+            msg.innerText = "❌ Registration failed"
+            msg.style.color = "red"
+            btn.innerText = "Register"
+            btn.disabled = false
+        }
+    })
+    .catch(()=>{
+        msg.innerText = "⚠️ Server error"
+        msg.style.color = "orange"
+        btn.innerText = "Register"
+        btn.disabled = false
+    })
+}
+</script>
+
 </body>
 </html>

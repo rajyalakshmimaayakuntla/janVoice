@@ -1,49 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raise Issue</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg,#6366f1, #3b82f6);
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(255,255,255,0.9);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.navbar h3 {
+    color: #1e293b;
+}
+
+/* Container */
+.container {
+    padding: 20px;
+    max-width: 500px;
+    margin: auto;
+}
+
+/* Card */
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+/* Inputs */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+input:focus, textarea:focus {
+    border-color: #6366f1;
+    outline: none;
+}
+
+/* File upload */
+.file {
+    background: #f1f5f9;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #6366f1;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #4f46e5;
+}
+
+/* Secondary button */
+.secondary {
+    background: #22c55e;
+}
+
+.secondary:hover {
+    background: #16a34a;
+}
+
+/* Message */
+#msgBox {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+}
+</style>
 </head>
-//** This is the page where user can raise their issues. The user can also see the issues raised by them and also filter them based on their status.
+
 <body>
-    <h1 id="msg"></h1>
-    
-    <form enctype="multipart/form-data">
-        <input type="text" placeholder="Enter issue name" id="issue_name"> </br> </br>
-        <textarea placeholder="Issue Description" id="issue_description"></textarea> </br> </br>
-        <textarea placeholder="Enter issue Address" id="issue_address"></textarea> </br> </br>
-        <input type="file" id="issue_image"> </br> </br>
-        <button onclick="submitIssue(event)">Submit Issue</button>
+
+<div class="navbar">
+    <h3>JanVoice</h3>
+    <h4 id="msg"></h4>
+</div>
+
+<div class="container">
+
+<div class="card">
+    <h2 style="text-align:center;">Raise an Issue</h2>
+
+    <form id="form">
+        <input type="text" placeholder="Issue Name" id="issue_name">
+        <textarea placeholder="Issue Description" id="issue_description"></textarea>
+        <textarea placeholder="Issue Address" id="issue_address"></textarea>
+
+        <input type="file" id="issue_image" class="file">
+
+        <button id="submitBtn" onclick="submitIssue(event)">
+            Submit Issue
+        </button>
     </form>
-    <button onclick="myissues(event)">Issues Raised By me</button>
-    <ul id="issues"></ul>
-    <script>
-        const user=JSON.parse(localStorage.getItem("user"))
-        document.getElementById("msg").innerText="Hi , "+user.username
-        function submitIssue(ev){
-            ev.preventDefault()
-            const formData=new FormData()
-            formData.append("issue_name",document.getElementById("issue_name").value)
-            formData.append("issue_description",document.getElementById("issue_description").value)
-            formData.append("issue_address",document.getElementById("issue_address").value)
-            formData.append("issue_image",document.getElementById("issue_image").files[0])
-            formData.append("userId",user._id)
-            fetch("http://localhost:3000/addIssue",{
-                method:"POST",
-                body:formData
-            }).then((res)=>res.json())
-            .then((data)=>{
-                if(data.msg){
-                    alert("Issue Added")
-                    document.querySelector("form").reset()
-                }
-            })
+
+    <button class="secondary" onclick="myissues(event)">
+        View My Issues
+    </button>
+
+    <p id="msgBox"></p>
+</div>
+
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"))
+msg.innerText = "Hi, " + user.username
+
+function submitIssue(ev){
+    ev.preventDefault()
+
+    const btn = document.getElementById("submitBtn")
+    btn.innerText = "Submitting..."
+    btn.disabled = true
+
+    const formData = new FormData()
+    formData.append("issue_name", issue_name.value)
+    formData.append("issue_description", issue_description.value)
+    formData.append("issue_address", issue_address.value)
+    formData.append("issue_image", issue_image.files[0])
+    formData.append("userId", user._id)
+
+    if(!issue_name.value || !issue_description.value || !issue_address.value){
+        msgBox.innerText = "⚠️ Fill all fields"
+        msgBox.style.color = "orange"
+        btn.innerText = "Submit Issue"
+        btn.disabled = false
+        return
+    }
+
+    fetch("http://localhost:3000/addIssue",{
+        method:"POST",
+        body:formData
+    })
+    .then(res=>res.json())
+    .then((data)=>{
+        if(data.msg){
+            msgBox.innerText = "✅ Issue submitted successfully"
+            msgBox.style.color = "green"
+            document.getElementById("form").reset()
         }
-        function myissues(ev){
-            ev.preventDefault()
-            window.location.href="./userIssues.html"
-        }
-    </script>
+        btn.innerText = "Submit Issue"
+        btn.disabled = false
+    })
+    .catch(()=>{
+        msgBox.innerText = "⚠️ Server error"
+        msgBox.style.color = "red"
+        btn.innerText = "Submit Issue"
+        btn.disabled = false
+    })
+}
+
+function myissues(ev){
+    ev.preventDefault()
+    window.location.href = "./userIssues.html"
+}
+</script>
+
 </body>
 </html>

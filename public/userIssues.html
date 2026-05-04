@@ -1,148 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-//** This is the page where user can see the issues raised by them and also filter them based on their status. The user can also delete the issue if they want to.
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Issues</title>
+
 <style>
-    #outer_cont{
-        display: flex;
-        flex-wrap: wrap;
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg,#6366f1, #3b82f6);
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 25px;
+    background: rgba(255,255,255,0.9);
+}
+
+/* Filters */
+.filters {
+    text-align: center;
+    margin: 15px;
+}
+
+.filters input {
+    margin: 0 5px;
+}
+
+/* Grid */
+#outer_cont {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Card */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Status */
+.status {
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.Pending { color: orange; }
+.Assigned { color: blue; }
+.Resolved { color: green; }
+
+/* Button */
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #6366f1;
+    color: white;
+}
+
+.delete {
+    background: red;
+}
+
+/* Expanded */
+.expanded {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 60%;
+    margin: 20px auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
 </style>
+</head>
+
 <body>
-    <h1 id="msg"></h1>
-    <input type="radio" name="filter" value="all" checked>All Issues
-    <input type="radio" name="filter" value="Pending">Pending Issues
-    <input type="radio" name="filter" value="Assigned">Assigned Issues
-    <input type="radio" name="filter" value="Resolved">Resolved Issues
-    <div id="outer_cont"></div>
-    <div id="cont2"></div>
-</body>
+
+<div class="navbar">
+    <h3>JanVoice</h3>
+    <h4 id="msg"></h4>
+</div>
+
+<div class="filters">
+    <input type="radio" name="filter" value="all" checked>All
+    <input type="radio" name="filter" value="Pending">Pending
+    <input type="radio" name="filter" value="Assigned">Assigned
+    <input type="radio" name="filter" value="Resolved">Resolved
+</div>
+
+<div id="outer_cont"></div>
+<div id="cont2"></div>
+
 <script>
-    const user=JSON.parse(localStorage.getItem("user"))
-    document.getElementById("msg").innerText="Hi , "+user.username
-    fetch(`http://localhost:3000/getmyIssues/${user._id}`)
-            .then((res)=>res.json())
-            .then((data)=>{
-                // console.log(data);
-                genUI(data)
-            })
-            function genUI(data){
-                document.getElementById("outer_cont").innerHTML=""
-                document.getElementById("cont2").innerHTML=""
-                data.forEach((issue)=>{
-                    const card=document.createElement("div")
-                    card.style.border = "1px solid black"
-                    card.style.margin = "10px"
-                    card.style.padding = "10px"
-                    card.style.width = "250px"
+const user = JSON.parse(localStorage.getItem("user"))
+msg.innerText = "Hi, " + user.username
 
-                    const issue_name=document.createElement("p")
-                    issue_name.innerHTML="<b><u>Issue Name</u> : </b>"+issue.issue_name
+fetch(`http://localhost:3000/getmyIssues/${user._id}`)
+.then(res=>res.json())
+.then(data=>genUI(data))
 
-                    const issue_image=document.createElement("img")
-                    issue_image.src="/"+issue.issue_image
-                    issue_image.style.width="230px"
+function genUI(data){
+    outer_cont.innerHTML = ""
+    cont2.innerHTML = ""
 
-                    const issue_status=document.createElement("p")
-                    issue_status.innerHTML="<b><u>Issue Status</u> : </b>"+ issue.issue_status
-                    
-                    const btn=document.createElement("button")
-                    btn.innerHTML="Explore Issue"
-                    btn.onclick=(ev)=>{
-                    ev.preventDefault()
+    data.forEach(issue=>{
+        const card = document.createElement("div")
+        card.className = "card"
 
-                    document.getElementById("cont2").innerHTML=""
-                    const expandcard=document.createElement("div")
+        card.innerHTML = `
+            <h3>${issue.issue_name}</h3>
+            <img src="/${issue.issue_image}">
+            <p class="status ${issue.issue_status}">
+                ${issue.issue_status}
+            </p>
+        `
 
-                    expandcard.style.border = "1px solid black"
-                    expandcard.style.margin = "15px"
-                    expandcard.style.padding = "15px"
-                    expandcard.style.width = "600px"
-                    expandcard.style.textAlign="center" 
+        const btn = document.createElement("button")
+        btn.innerText = "Explore"
 
-                      const issue_name=document.createElement("p")
-                      issue_name.innerHTML=" <b> <u>Issue Name</u> : </b>"+issue.issue_name
+        btn.onclick = ()=>{
+            showExpanded(issue)
+        }
 
-                      const issue_image=document.createElement("img")
-                      issue_image.src="/"+issue.issue_image
+        card.appendChild(btn)
+        outer_cont.appendChild(card)
+    })
+}
 
+function showExpanded(issue){
+    cont2.innerHTML = ""
 
-                      const issue_status=document.createElement("p")
-                      issue_status.innerHTML="<b><u>Issue Status</u> : </b>"+ issue.issue_status
+    const box = document.createElement("div")
+    box.className = "expanded"
 
-                      const issue_address=document.createElement("p")
-                      issue_address.innerHTML="<b><u>Issue Address</u> : </b>"+issue.issue_address
+    box.innerHTML = `
+        <h2>${issue.issue_name}</h2>
+        <img src="/${issue.issue_image}" style="width:100%">
+        <p><b>Status:</b> ${issue.issue_status}</p>
+        <p><b>Address:</b> ${issue.issue_address}</p>
 
-                      const head=document.createElement("h4")
-                      head.innerHTML="<u>Issue Raised by</u>"
+        <h3>User Info</h3>
+        <p>${user.username}</p>
+        <p>${user.email}</p>
+        <p>${user.phoneno}</p>
+    `
 
-                      const username=document.createElement("p")
-                      username.innerHTML="<b><u>User Name</u> : </b>"+user.username
+    const del = document.createElement("button")
+    del.innerText = "Delete"
+    del.className = "delete"
 
-                      const user_email=document.createElement("p")
-                      user_email.innerHTML="<b><u>user Email</u> : </b>"+user.email
+    del.onclick = ()=>{
+        fetch("/deleteIssue",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({issueId:issue._id})
+        })
+        .then(res=>res.json())
+        .then(()=>{
+            location.reload()
+        })
+    }
 
-                      const user_phoneno=document.createElement("p")
-                      user_phoneno.innerHTML="<b><u>User Phoneno.</u> : </b>"+user.phoneno
+    box.appendChild(del)
+    cont2.appendChild(box)
+}
 
-                      const del=document.createElement("button")
-                      del.innerText="Delete"
-                      del.onclick=()=>{
-                        fetch("/deleteIssue",{
-                            method:"POST",
-                            headers:{"Content-Type":"application/json"},
-                            body:JSON.stringify({issueId:issue._id})
-                        }).then((res)=>res.json())
-                        .then((data)=>{
-                            alert(data.msg)
+/* Filter */
+document.querySelectorAll('input[name="filter"]').forEach(radio=>{
+    radio.onchange = ()=>{
+        const val = document.querySelector('input[name="filter"]:checked').value
 
-                            fetch("http://localhost:3000/getmyIssues")
-                            .then((res)=>res.json())
-                            .then((data)=>{
-                            genUI(data)
-                             })
-                        })
-                      }
-
-                      expandcard.appendChild(issue_name)
-                      expandcard.appendChild(issue_image)
-                      expandcard.appendChild(issue_status)
-                      expandcard.appendChild(issue_address)
-                      expandcard.appendChild(head)
-                      expandcard.appendChild(username)
-                      expandcard.appendChild(user_email)
-                      expandcard.appendChild(user_phoneno)
-                      expandcard.appendChild(del)
-                      document.getElementById("cont2").appendChild(expandcard)
-                }
-
-                    card.appendChild(issue_name)
-                    card.appendChild(issue_image)
-                    card.appendChild(issue_status)
-                    card.appendChild(btn)
-
-                    document.getElementById("outer_cont").appendChild(card)
-                })
-            }
-                document.querySelectorAll('input[name="filter"]').forEach(radio=>
-                {
-                  radio.onchange = ()=>
-                  {
-                     const selected = document.querySelector('input[name="filter"]:checked').value
-                      // console.log(selected)
-                      fetch("/getmyIssuesByStatus",{
-                       method:"POST",
-                       headers:{"Content-Type":"application/json"},
-                       body:JSON.stringify({issue_status:selected,userId:user._id})
-                       })
-                       .then((res)=>res.json())
-                       .then((data)=>{
-                       genUI(data)})
+        fetch("/getmyIssuesByStatus",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({issue_status:val,userId:user._id})
+        })
+        .then(res=>res.json())
+        .then(data=>genUI(data))
     }
 })
 </script>
+
+</body>
 </html>
