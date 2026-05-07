@@ -6,113 +6,105 @@
 <title>Login</title>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
 }
 
-body {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg,#6366f1, #3b82f6);
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#6366f1,#3b82f6);
 }
 
 /* Card */
-.container {
-    background: white;
-    padding: 35px;
-    border-radius: 15px;
-    width: 330px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(20px);}
-    to {opacity:1; transform:translateY(0);}
+.container{
+    background:white;
+    padding:35px;
+    border-radius:15px;
+    width:330px;
+    text-align:center;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
 }
 
 /* Title */
-.container h2 {
-    margin-bottom: 10px;
-    color: #1e293b;
+.container h2{
+    margin-bottom:10px;
+    color:#1e293b;
 }
 
 /* Role */
-.role {
-    font-size: 13px;
-    color: #64748b;
-    margin-bottom: 15px;
+.role{
+    font-size:13px;
+    color:#64748b;
+    margin-bottom:15px;
 }
 
 /* Inputs */
-.input-group {
-    position: relative;
+.input-group{
+    position:relative;
 }
 
-input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    outline: none;
+input{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    border-radius:8px;
+    border:1px solid #ddd;
+    outline:none;
 }
 
-input:focus {
-    border-color: #6366f1;
+input:focus{
+    border-color:#6366f1;
 }
 
-/* Eye icon */
-.eye {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
+/* Eye */
+.eye{
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
 }
 
 /* Button */
-button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 8px;
-    background: #6366f1;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
+button{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border:none;
+    border-radius:8px;
+    background:#6366f1;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
 }
 
-button:hover {
-    background: #4f46e5;
+button:hover{
+    background:#4f46e5;
 }
 
-/* Disabled button */
-button:disabled {
-    background: gray;
-    cursor: not-allowed;
+button:disabled{
+    background:gray;
+    cursor:not-allowed;
 }
 
 /* Link */
-a {
-    display: block;
-    margin-top: 15px;
-    color: #6366f1;
-    text-decoration: none;
+a{
+    display:block;
+    margin-top:15px;
+    color:#6366f1;
+    text-decoration:none;
 }
 
 /* Message */
-#msg {
-    margin-top: 10px;
-    font-size: 14px;
+#msg{
+    margin-top:10px;
+    font-size:14px;
 }
 </style>
 </head>
@@ -120,6 +112,7 @@ a {
 <body>
 
 <div class="container">
+
     <h2>Welcome Back 👋</h2>
 
     <div class="role">
@@ -127,72 +120,124 @@ a {
     </div>
 
     <form id="form">
-        <input placeholder="Username" id="un">
+
+        <input type="text" placeholder="Username" id="un">
 
         <div class="input-group">
             <input type="password" placeholder="Password" id="ps">
             <span class="eye" onclick="togglePassword()">👁️</span>
         </div>
 
-        <button id="loginBtn" onclick="login(event)">Login</button>
+        <button id="loginBtn" onclick="login(event)">
+            Login
+        </button>
+
     </form>
 
-    <a href="registrationform.html">Create Account</a>
+    <a href="registrationform.html">
+        Create Account
+    </a>
 
     <p id="msg"></p>
+
 </div>
 
 <script>
-const role = localStorage.getItem("role") || "user"
-roleText.innerText = role.toUpperCase()
 
+const role = localStorage.getItem("role") || "user"
+
+document.getElementById("roleText").innerText = role.toUpperCase()
+
+/* Show / Hide Password */
 function togglePassword(){
+
     const ps = document.getElementById("ps")
-    ps.type = ps.type === "password" ? "text" : "password"
+
+    if(ps.type === "password"){
+        ps.type = "text"
+    }
+    else{
+        ps.type = "password"
+    }
 }
 
+/* Login */
 function login(ev){
+
     ev.preventDefault()
 
     const btn = document.getElementById("loginBtn")
+    const msg = document.getElementById("msg")
+
     btn.innerText = "Logging in..."
     btn.disabled = true
 
     const login_details = {
-        username: un.value,
-        password: ps.value,
+
+        username: document.getElementById("un").value,
+        password: document.getElementById("ps").value,
         role: role
     }
 
     fetch("/login",{
+
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
         body:JSON.stringify(login_details)
+
     })
+
     .then(res=>res.json())
+
     .then((data)=>{
-        if(data.success && data.user.role==="user"){
-            localStorage.setItem("user", JSON.stringify(data.user))
+
+        /* USER LOGIN */
+        if(data.success && data.user.role === "user"){
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(data.user)
+            )
+
             window.location.href = "./reports.html"
         }
-        else if(data.success && data.user.role==="admin"){
-            localStorage.setItem("user", JSON.stringify(data.user))
+
+        /* ADMIN LOGIN */
+        else if(data.success && data.user.role === "admin"){
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(data.user)
+            )
+
             window.location.href = "./adminPage.html"
         }
+
+        /* INVALID */
         else{
+
             msg.innerText = "❌ Invalid username or password"
             msg.style.color = "red"
+
             btn.innerText = "Login"
             btn.disabled = false
         }
     })
+
     .catch(()=>{
+
         msg.innerText = "⚠️ Server error"
         msg.style.color = "orange"
+
         btn.innerText = "Login"
         btn.disabled = false
     })
 }
+
 </script>
 
 </body>

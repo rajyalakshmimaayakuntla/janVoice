@@ -116,10 +116,19 @@ button {
 <div id="cont2"></div>
 
 <script>
-const user = JSON.parse(localStorage.getItem("user"))
-msg.innerText = "Hi, " + user.username
+const msg = document.getElementById("msg")
+const cont = document.getElementById("cont")
+const cont2 = document.getElementById("cont2")
 
-fetch("http://localhost:3000/getAllIssues")
+const user = JSON.parse(localStorage.getItem("user"))
+
+if(user){
+    msg.innerText = "Hi, " + user.username
+}else{
+    msg.innerText = "Hi, Admin"
+}
+
+fetch("/getAllIssues")
 .then(res=>res.json())
 .then(data=>genUI(data))
 
@@ -127,13 +136,18 @@ function genUI(data){
     cont.innerHTML = ""
     cont2.innerHTML = ""
 
+    if(data.length === 0){
+        cont.innerHTML = "<h3 style='text-align:center'>No Issues Found</h3>"
+        return
+    }
+
     data.forEach(issue=>{
         const card = document.createElement("div")
         card.className = "card"
 
         card.innerHTML = `
             <h3>${issue.issue_name}</h3>
-            <img src="/${issue.issue_image}">
+            <img src="/uploads/${issue.issue_image}">
             <p class="status ${issue.issue_status}">
                 ${issue.issue_status}
             </p>
@@ -168,7 +182,7 @@ function showExpanded(issue, userData){
 
     box.innerHTML = `
         <h2>${issue.issue_name}</h2>
-        <img src="/${issue.issue_image}" style="width:100%">
+        <img src="/uploads/${issue.issue_image}" style="width:100%">
         <p><b>Status:</b> ${issue.issue_status}</p>
         <p><b>Address:</b> ${issue.issue_address}</p>
 
@@ -199,7 +213,6 @@ function showExpanded(issue, userData){
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({issueId:issue._id})
         })
-        .then(res=>res.json())
         .then(()=> location.reload())
     }
 
@@ -220,6 +233,7 @@ function showExpanded(issue, userData){
     box.appendChild(del)
 
     cont2.appendChild(box)
+    box.scrollIntoView({behavior:"smooth"})
 }
 
 /* Filter */
