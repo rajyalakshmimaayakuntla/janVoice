@@ -24,7 +24,7 @@ require("dotenv").config()
 
 app.use(cors())
 app.use(express.static(__dirname + "/public"))
-app.use(express.static(__dirname + "/uploads"))
+app.use("/uploads",express.static(__dirname + "/uploads"))
 app.use(bodyParser.json())
 
 
