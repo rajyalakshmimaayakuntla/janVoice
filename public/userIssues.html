@@ -1,3 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Issues</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#6366f1,#3b82f6);
+}
+
+/* Navbar */
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 25px;
+    background:rgba(255,255,255,0.9);
+    box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+.navbar h3{
+    color:#4f46e5;
+}
+
+/* Filters */
+.filters{
+    text-align:center;
+    margin:20px 0;
+    color:white;
+    font-weight:bold;
+}
+
+.filters input{
+    margin-left:15px;
+    cursor:pointer;
+}
+
+/* Grid */
+#outer_cont{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+    padding:20px;
+}
+
+/* Card */
+.card{
+    background:white;
+    border-radius:15px;
+    padding:15px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-8px) scale(1.03);
+}
+
+.card img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+/* Status */
+.status{
+    margin:12px 0;
+    font-weight:bold;
+    font-size:16px;
+}
+
+.Pending{
+    color:orange;
+}
+
+.Assigned{
+    color:#2563eb;
+}
+
+.Resolved{
+    color:green;
+}
+
+/* Buttons */
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    color:white;
+    background:#6366f1;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+.delete{
+    background:red;
+    margin-top:15px;
+}
+
+/* Expanded box */
+.expanded{
+    width:70%;
+    margin:20px auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+.expanded img{
+    width:100%;
+    border-radius:10px;
+    margin:15px 0;
+}
+
+/* Responsive */
+@media(max-width:768px){
+
+    .expanded{
+        width:90%;
+    }
+
+    .navbar{
+        flex-direction:column;
+        gap:10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <h3>JanVoice</h3>
+    <h4 id="msg"></h4>
+</div>
+
+<div class="filters">
+
+    <input type="radio" name="filter" value="all" checked>
+    All
+
+    <input type="radio" name="filter" value="Pending">
+    Pending
+
+    <input type="radio" name="filter" value="Assigned">
+    Assigned
+
+    <input type="radio" name="filter" value="Resolved">
+    Resolved
+
+</div>
+
+<div id="outer_cont"></div>
+
+<div id="cont2"></div>
+
 <script>
 const msg = document.getElementById("msg")
 const outer_cont = document.getElementById("outer_cont")
@@ -15,7 +190,7 @@ if(!user){
 msg.innerText = "Hi, " + user.username
 
 /* Loading state */
-outer_cont.innerHTML = "<h3 style='text-align:center'>Loading...</h3>"
+outer_cont.innerHTML = "<h3 style='text-align:center;color:white'>Loading...</h3>"
 
 /* Fetch user issues */
 fetch(`/getmyIssues/${user._id}`)
@@ -23,92 +198,144 @@ fetch(`/getmyIssues/${user._id}`)
 .then(data=>genUI(data))
 
 function genUI(data){
+
     outer_cont.innerHTML = ""
     cont2.innerHTML = ""
 
     /* Empty state */
     if(data.length === 0){
-        outer_cont.innerHTML = "<h3 style='text-align:center'>No Issues Found</h3>"
+
+        outer_cont.innerHTML = `
+        <h3 style='text-align:center;color:white'>
+            No Issues Found
+        </h3>
+        `
+
         return
     }
 
     data.forEach(issue=>{
+
         const card = document.createElement("div")
         card.className = "card"
 
         card.innerHTML = `
             <h3>${issue.issue_name}</h3>
+
             <img src="/uploads/${issue.issue_image}">
+
             <p class="status ${issue.issue_status}">
                 ${issue.issue_status}
             </p>
         `
 
         const btn = document.createElement("button")
+
         btn.innerText = "Explore"
 
         btn.onclick = ()=>{
+
             showExpanded(issue)
         }
 
         card.appendChild(btn)
+
         outer_cont.appendChild(card)
     })
 }
 
 function showExpanded(issue){
+
     cont2.innerHTML = ""
 
     const box = document.createElement("div")
+
     box.className = "expanded"
 
     box.innerHTML = `
         <h2>${issue.issue_name}</h2>
-        <img src="/uploads/${issue.issue_image}" style="width:100%">
+
+        <img src="/uploads/${issue.issue_image}">
+
         <p><b>Status:</b> ${issue.issue_status}</p>
+
         <p><b>Address:</b> ${issue.issue_address}</p>
 
-        <h3>User Info</h3>
+        <h3 style="margin-top:15px">User Info</h3>
+
         <p>${user.username}</p>
+
         <p>${user.email}</p>
+
         <p>${user.phoneno}</p>
     `
 
     const del = document.createElement("button")
+
     del.innerText = "Delete"
+
     del.className = "delete"
 
     del.onclick = ()=>{
+
         fetch("/deleteIssue",{
+
             method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({issueId:issue._id})
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+                issueId:issue._id
+            })
+
         })
-        .then(()=> location.reload())
+
+        .then(()=>location.reload())
     }
 
     box.appendChild(del)
+
     cont2.appendChild(box)
 
     /* Smooth scroll */
-    box.scrollIntoView({behavior:"smooth"})
+    box.scrollIntoView({
+        behavior:"smooth"
+    })
 }
 
 /* Filter */
 document.querySelectorAll('input[name="filter"]').forEach(radio=>{
+
     radio.onchange = ()=>{
-        const val = document.querySelector('input[name="filter"]:checked').value
+
+        const val = document.querySelector(
+            'input[name="filter"]:checked'
+        ).value
 
         fetch("/getmyIssuesByStatus",{
+
             method:"POST",
-            headers:{"Content-Type":"application/json"},
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
             body:JSON.stringify({
+
                 issue_status:val,
+
                 userId:user._id
             })
         })
+
         .then(res=>res.json())
+
         .then(data=>genUI(data))
     }
 })
 </script>
+
+</body>
+</html>

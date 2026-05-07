@@ -26,6 +26,7 @@ app.use(cors())
 app.use(express.static(__dirname + "/public"))
 app.use("/uploads",express.static(__dirname + "/uploads"))
 app.use(bodyParser.json())
+app.use(express.json())
 
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
