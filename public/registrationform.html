@@ -168,6 +168,7 @@ function adduser(ev){
         role: role
     }
 
+    const msg=document.getElementById("msg")
     // Basic validation
     if(!data.username || !data.password || !data.email || !data.phoneno){
         msg.innerText = "⚠️ Please fill all fields"
